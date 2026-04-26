@@ -18,7 +18,8 @@ class FetchLtpCommand extends Command
     public function handle(DseScraperService $scraper)
     {
         // 1. Trading schedule check (Sunday=0 through Thursday=4)
-        /**$now = now()->shiftTimezone('Asia/Dhaka');
+        $now = now()->shiftTimezone('Asia/Dhaka');
+        // dump("Current time in Dhaka: {$now->toDateTimeString()}");
         $dayOfWeek = $now->dayOfWeek; // Carbon: 0=Sunday, 4=Thursday
 
         if ($dayOfWeek < 0 || $dayOfWeek > 4) {
@@ -30,7 +31,7 @@ class FetchLtpCommand extends Command
         if ($timeOfDay < '10:00' || $timeOfDay > '14:30') {
             $this->info('Outside trading hours (10:00–14:30). Skipping.');
             return 0;
-        }**/
+        }
 
         // 2. Scrape latest prices
         $this->info('Fetching latest prices from DSE...');
