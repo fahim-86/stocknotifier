@@ -19,7 +19,7 @@ class FetchLtpCommand extends Command
     {
         // 1. Trading schedule check (Sunday=0 through Thursday=4)
         $now = now()->shiftTimezone('Asia/Dhaka');
-        // dump("Current time in Dhaka: {$now->toDateTimeString()}");
+        dump("Current time in Dhaka: {$now->toDateTimeString()}");
         $dayOfWeek = $now->dayOfWeek; // Carbon: 0=Sunday, 4=Thursday
 
         if ($dayOfWeek < 0 || $dayOfWeek > 4) {

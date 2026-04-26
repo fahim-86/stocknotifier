@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-login-layout>
     <div class="flex min-h-screen">
         <!-- Hero Panel (60%) -->
         <div class="hidden lg:flex lg:w-3/5 relative overflow-hidden"
@@ -21,21 +21,15 @@
 
             <!-- Emblem & Content -->
             <div class="relative z-10 flex flex-col items-center justify-center w-full p-12 text-center text-white">
-                <!-- DSHE-like emblem (you can replace with actual logo) -->
-                <div class="mb-8">
-                    <svg class="w-28 h-28 mx-auto" viewBox="0 0 100 100">
-                        <circle cx="50" cy="50" r="45" fill="none" stroke="white" stroke-width="2" />
-                        <path d="M50 15 L60 45 L90 50 L60 55 L50 85 L40 55 L10 50 L40 45 Z" fill="white" />
-                        <!-- Open book inside star -->
-                        <g transform="translate(35,35) scale(0.3)">
-                            <path d="M5 0 L10 10 L0 3 L10 3 L0 10 Z" fill="#006a4e" />
-                        </g>
-                    </svg>
+                <div class="mb-5">
+                    <a href="/">
+                        <img src="{{ asset('images/logo120.svg') }}" alt="Logo" class="w-30 h-30">
+                    </a>
                 </div>
-                <h1 class="text-4xl font-serif font-bold tracking-tight">পরিদপ্তর</h1>
-                <h2 class="mt-2 text-2xl font-medium">Directorate of Secondary & Higher Education</h2>
-                <p class="mt-4 max-w-md text-lg opacity-90">শিক্ষার আলো, উন্নত আগামীর সোপান</p>
-                <p class="mt-8 text-sm opacity-75">Empowering students, educators, and institutions</p>
+                <h1 class="text-4xl font-serif font-bold tracking-tight">স্টকবাজ</h1>
+                <h2 class="mt-2 text-2xl font-medium">DSE Price Alert System</h2>
+                <p class="mt-4 max-w-md text-lg opacity-90">স্মার্ট প্রাইস অ্যালার্ট সিস্টেম</p>
+                <p class="mt-8 text-sm opacity-75">নির্ভুল ডেটা, সফল বিনিয়োগের পথ</p>
             </div>
 
             <!-- Decorative red stripe / accent -->
@@ -43,7 +37,7 @@
         </div>
 
         <!-- Form Panel (40%) -->
-        <div class="w-full lg:w-2/5 flex items-center justify-center p-8 bg-white">
+        <div class="w-full lg:w-3/5 flex items-center justify-center p-8 bg-white">
             <div class="w-full max-w-md">
                 <!-- Mobile banner (visible only on small screens) -->
                 <div class="lg:hidden text-center mb-8">
@@ -122,4 +116,4 @@
             </div>
         </div>
     </div>
-</x-guest-layout>
+</x-login-layout>
