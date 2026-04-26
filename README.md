@@ -1,4 +1,4 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<p align="center"><a href="https://" target="_blank"><img src="/public/images/logo.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
 <a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
@@ -7,53 +7,194 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
-## About Laravel
+# StockBuzz
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+A Laravel web application that monitors the Dhaka Stock Exchange (DSE) and sends real-time email alerts when a stock’s last traded price (LTP) matches your defined target price.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Live Stock Data:** Fetches trading codes and LTP from the [DSE Latest Share Price](https://dsebd.org/latest_share_price_scroll_l.php) page every minute during market hours.
+- **Custom Alerts:** Select multiple trading codes and set individual target prices.
+- **Instant Email Notification:** Sends an email the moment a stock’s LTP equals your target price.
+- **User Accounts:** Secure registration and login via email.
+- **Active Hours Only:** The data fetching and alert checking are automatically restricted to DSE trading hours (Sunday–Thursday, 10:00 AM – 2:30 PM BST).
+- **Responsive UI:** Built with Laravel Livewire for a dynamic, single-page experience without complex JavaScript.
 
-## Learning Laravel
+## Tech Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- **Backend:** Laravel 10/11 (PHP 8.1+)
+- **Frontend:** Laravel Livewire, Blade, Tailwind CSS (optional)
+- **Database:** MySQL / MariaDB
+- **Scraping:** Laravel HTTP Client + Symfony DomCrawler
+- **Notifications:** Laravel Notifications (email channel)
+- **Queue:** Database/Laravel Horizon for asynchronous email delivery
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Prerequisites
 
-## Laravel Sponsors
+Before installing, ensure your environment meets the following:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- **PHP** >= 8.1 (with `curl`, `dom`, `mbstring`, `pdo_mysql` extensions)
+- **Composer** (latest stable)
+- **MySQL** (or compatible database)
+- **Node.js & NPM** (for frontend assets, if using Vite)
+- **Git** (for cloning the repository)
 
-### Premium Partners
+## Installation
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/yourusername/dse-price-alert.git
+cd dse-price-alert
+```
+
+### 2. Install PHP Dependencies
+
+```bash
+composer install
+```
+
+### 3. Set Up Environment File
+
+Copy the example environment file and generate an application key:
+
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+### 4. Configure Database & Mail
+
+Edit the `.env ` file with your database credentials and mail server settings.
+
+```bash
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=dse_alerts
+DB_USERNAME=root
+DB_PASSWORD=
+
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.mailtrap.io     # For development use Mailtrap/Mailpit
+MAIL_PORT=2525
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="alerts@yourdomain.com"
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+### 5. Set the Application Timezone
+
+In the same `.env` file, set the timezone to Bangladesh Standard Time:
+
+```bash
+APP_TIMEZONE=Asia/Dhaka
+```
+
+This ensures the scheduler runs according to DSE market hours.
+
+### 6. Install & Build Frontend Assets
+
+```bash
+npm install
+npm run build
+```
+
+### 7. Run Migrations and Seeders
+
+This creates the necessary tables and populates the `stocks` table with an initial snapshot (optional seeder included).
+
+```bash
+php artisan migrate --seed
+```
+
+### 8. Create Storage Link (if needed)
+
+```bash
+php artisan storage:link
+```
+
+### 9. Run the Application
+
+```bash
+php artisan serve
+```
+
+The app will be available at `http://127.0.0.1:8000`.
+
+## Scheduling & Queue Processing
+
+The core functionality relies on two scheduled commands:
+
+- `fetch:dse-data` – Fetches the latest share prices from DSE.
+- `check:alerts` – Compares LTP with user’s target prices and sends emails.
+
+**During local development**, run the scheduler in foreground mode:
+
+```bash
+php artisan schedule:work
+```
+
+**For production**, add a single cron entry to your server:
+
+```bash
+cron
+
+* * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
+```
+
+The schedule is automatically restricted to market hours (Sun–Thu, 10:00–14:30 Asia/Dhaka).
+
+**Email sending is queued** to avoid slowing down the scheduler. Run a queue worker:
+
+```bash
+php artisan queue:work
+```
+
+Or use Supervisor for long-running processes. During testing, you can set `QUEUE_CONNECTION=sync` in `.env` to send emails immediately (not recommended for production).
+
+## Manual Testing
+
+You can run the commands individually to test:
+
+```bash
+php artisan fetch:dse-data
+php artisan check:alerts
+```
+
+The `fetch:dse-data` command will populate the stocks table with current DSE data. The `check:alerts` command will scan all active alerts.
+
+## Usage
+
+1. **Register** a new account using a valid email address.
+
+2. **Login** to your dashboard.
+
+3. **Add an Alert:**
+    - Select a trading code from the dropdown (populated from the `stocks` cache).
+
+    - Enter your target price (e.g., `21.50`).
+
+    - Click “Add Alert” to create a new row.
+
+4. **Manage Alerts:** Existing alerts appear in a table with a “Remove” button to delete them.
+
+5. **Wait for the Match:** When the stock’s LTP hits your target price, an email will be sent to your registered address instantly.
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Contributions, issues, and feature requests are welcome. Feel free to check [issues page](https://github.com/yourusername/dse-price-alert/issues).
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Security Vulnerabilities
+
+If you discover a security vulnerability, please send an e-mail to [your email] instead of using the issue tracker.
+
+##
+
+**Disclaimer:** This application relies on the DSE website’s HTML structure for data scraping. Any changes to the DSE page may temporarily break the data fetching process.
