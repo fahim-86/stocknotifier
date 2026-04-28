@@ -95,7 +95,7 @@ class FetchLtpCommand extends Command
                 // Send email SYNCHRONOUSLY — no queue needed
                 try {
                     Mail::to($alert->user->email)
-                        ->send(new PriceAlertReached($alert, $triggerType, $ltp));
+                        ->send(new PriceAlertReached($alert, $ltp, $triggerType));
 
                     $alert->update(['is_active' => false]);
                     $alertsFired++;

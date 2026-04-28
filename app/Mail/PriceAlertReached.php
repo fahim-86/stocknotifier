@@ -14,33 +14,27 @@ class PriceAlertReached extends Mailable
 {
     use SerializesModels;
 
-    public $tradingCode;
-    public $triggerType; // 'high' or 'low'
-    public $ltp;
-
     /**
      * Create a new message instance.
      */
-    public function __construct(string $tradingCode, string $triggerType, float $ltp)
+    public function __construct(
+        public Alert  $alert,
+        public float  $ltp,
+        public string $triggerType   // 'high' or 'low'
+    ) {}
+
+    public function envelope(): Envelope
     {
-        $this->tradingCode = $tradingCode;
-        $this->triggerType = $triggerType;
-        $this->ltp = $ltp;
+        $direction = $this->triggerType === 'high' ? '🔴 HIGH' : '🟢 LOW';
+        return new Envelope(
+            subject: "[DSE Alert] {$direction} triggered for {$this->alert->trading_code}",
+        );
     }
 
-    public function build()
+    public function content(): Content
     {
-        return $this->subject("DSE Alert: {$this->tradingCode} {$this->triggerType} price hit")
-            ->markdown('emails.price_alert');
-    }
-
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, Attachment>
-     */
-    public function attachments(): array
-    {
-        return [];
+        return new Content(
+            view: 'emails.price_alert',
+        );
     }
 }
