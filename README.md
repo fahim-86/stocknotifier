@@ -161,7 +161,7 @@ You can run the commands individually to test:
 `--force` will let you bypass the schedule code
 
 ```bash
-php artisan fetch:dse-data
+php artisan fetch:ltp --force
 ```
 
 The `fetch:dse-data` command will populate the stocks table with current DSE data. The `check:alerts` command will scan all active alerts.
