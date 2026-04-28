@@ -41,12 +41,10 @@
             <div class="w-full max-w-md">
                 <!-- Mobile banner (visible only on small screens) -->
                 <div class="lg:hidden text-center mb-8">
-                    <div class="inline-flex items-center justify-center p-3 bg-green-900 rounded-full">
-                        <svg class="w-10 h-10 text-white" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm-2.82 6L12 10.35 14.82 9 12 7.65 9.18 9zM16 15.54L12 17.72 8 15.54v-3.34l4 2.17 4-2.17v3.34z" />
-                        </svg>
+                    <div class="inline-flex items-center justify-center p-3 rounded-full">
+                        <img src="{{ asset('images/logo120.svg') }}" alt="Logo" class="w-20 h-20">
                     </div>
-                    <h2 class="mt-4 text-2xl font-serif font-bold text-green-900">DSHE Login</h2>
+                    <h2 class="mt-4 text-2xl font-serif font-bold text-green-900">StockBuzz Login</h2>
                 </div>
 
                 <!-- Session Status -->
