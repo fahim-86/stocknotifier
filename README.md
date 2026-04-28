@@ -44,8 +44,8 @@ Before installing, ensure your environment meets the following:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/dse-price-alert.git
-cd dse-price-alert
+git clone https://github.com/fahim-86/stocknotifier.git
+cd stocknotifier
 ```
 
 ### 2. Install PHP Dependencies
@@ -158,13 +158,13 @@ Or use Supervisor for long-running processes. During testing, you can set `QUEUE
 ## Manual Testing
 
 You can run the commands individually to test:
+`--force` will let you bypass the schedule code
 
 ```bash
-php artisan fetch:dse-data
-php artisan check:alerts
+php artisan fetch:ltp --force
 ```
 
-The `fetch:dse-data` command will populate the stocks table with current DSE data. The `check:alerts` command will scan all active alerts.
+The `fetch:ltp` command will populate the stocks table with current DSE data. The `check:alerts` command will scan all active alerts.
 
 ## Usage
 
