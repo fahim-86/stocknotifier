@@ -12,7 +12,12 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('fetch:ltp')->everyMinute();
+        $schedule->command('fetch:ltp')
+            ->everyMinute()
+            ->timezone('Asia/Dhaka')
+            ->withoutOverlapping()      // prevents stacking if scrape is slow
+            ->runInBackground()
+            ->appendOutputTo(storage_path('logs/fetch-ltp.log'));
     }
 
     /**
