@@ -44,7 +44,7 @@ Before installing, ensure your environment meets the following:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/dse-price-alert.git
+git clone https://github.com/fahim-86/stocknotifier.git
 cd dse-price-alert
 ```
 
