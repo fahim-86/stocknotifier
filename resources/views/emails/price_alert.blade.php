@@ -107,7 +107,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>{{ $triggerType === 'high' ? '🔴 High Price Alert' : '🟢 Low Price Alert' }} Triggered</h1>
+            <h1>{{ $triggerType === 'high' ? '🔴 High Price Alert' : '🟢 Low Price Alert' }} from StockBuzz</h1>
             <p>{{ now()->setTimezone('Asia/Dhaka')->format('D, d M Y, h:i A') }} (Dhaka)</p>
         </div>
         <div class="body">
