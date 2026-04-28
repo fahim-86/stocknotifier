@@ -45,7 +45,7 @@ Before installing, ensure your environment meets the following:
 
 ```bash
 git clone https://github.com/fahim-86/stocknotifier.git
-cd dse-price-alert
+cd stocknotifier
 ```
 
 ### 2. Install PHP Dependencies
