@@ -3,7 +3,7 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use App\Models\Alert;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
@@ -12,7 +12,7 @@ use Illuminate\Queue\SerializesModels;
 
 class PriceAlertReached extends Mailable
 {
-    use Queueable, SerializesModels;
+    use SerializesModels;
 
     public $tradingCode;
     public $triggerType; // 'high' or 'low'

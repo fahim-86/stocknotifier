@@ -11,6 +11,8 @@ use App\Models\Stock;
 use App\Models\Alert;
 use App\Mail\PriceAlertReached;
 
+use function PHPSTORM_META\type;
+
 class FetchLtpCommand extends Command
 {
     protected $signature = 'fetch:ltp {--force : Skip trading hours check}';
@@ -52,63 +54,110 @@ class FetchLtpCommand extends Command
         }
 
         // 3. Update stocks table
-        foreach ($prices as $item) {
+        $prices->each(function ($row) {
             Stock::updateOrCreate(
-                ['trading_code' => $item->trading_code],
-                [
-                    'ltp' => $item->ltp,
-                    'last_fetched_at' => now()
-                ]
+                ['trading_code' => $row->trading_code],
+                ['ltp' => $row->ltp, 'fetched_at' => now()]
             );
-        }
-        $this->info('Stock prices updated.');
+        });
 
-        // 4. Check alerts against the new LTPs
+        $this->info("Updated {$prices->count()} stocks.");
+
+        // 3. Check active alerts against new LTPs
+        $priceMap = $prices->keyBy('trading_code'); // fast lookup
+
+        $alerts = Alert::with('user')
+            ->where('is_active', true)
+            ->get();
+
         $alertsFired = 0;
 
-        foreach ($prices as $item) {
-            $ltp = (float) $item->ltp;   // ensure numeric float
-            $code = $item->trading_code;
+        foreach ($alerts as $alert) {
+            $stock = $priceMap->get($alert->trading_code);
+            if (!$stock) {
+                continue;
+            }
 
-            $matchingAlerts = Alert::where('trading_code', $code)
-                ->where('is_active', true)
-                ->where(function ($query) use ($ltp) {
-                    $query->where(function ($q) use ($ltp) {
-                        $q->whereNotNull('high_price')
-                            ->where('high_price', '<=', $ltp);
-                    })->orWhere(function ($q) use ($ltp) {
-                        $q->whereNotNull('low_price')
-                            ->where('low_price', '>=', $ltp);
-                    });
-                })
-                ->with('user')
-                ->get();
+            $ltp = (float) $stock->ltp; // ensure numeric float
+            $triggered = false;
+            $triggerType = null;
 
-            foreach ($matchingAlerts as $alert) {
-                // Cast alert prices to float for safe comparison
-                $high = is_null($alert->high_price) ? null : (float) $alert->high_price;
-                $low  = is_null($alert->low_price)  ? null : (float) $alert->low_price;
+            if ($alert->high_price !== null && $ltp >= (float) $alert->high_price) {
+                $triggered = true;
+                $triggerType = 'high';
+            } elseif ($alert->low_price !== null && $ltp <= (float) $alert->low_price) {
+                $triggered = true;
+                $triggerType = 'low';
+            }
+            if ($triggered) {
+                // dd(gettype($alert), $alert, gettype($ltp), $ltp, gettype($triggerType), $triggerType);
 
-                // Determine which price matched (priority: high > low)
-                $triggerType = '';
-                if (!is_null($high) && $ltp >= $high) {
-                    $triggerType = 'high';
-                } elseif (!is_null($low) && $ltp <= $low) {
-                    $triggerType = 'low';
+                // Send email SYNCHRONOUSLY — no queue needed
+                try {
+                    Mail::to($alert->user->email)
+                        ->send(new PriceAlertReached($alert, $triggerType, $ltp));
+
+                    $alert->update(['is_active' => false]);
+                    $alertsFired++;
+
+                    $this->info("✓ Alert fired: {$alert->trading_code} @ {$ltp} ({$triggerType}) → {$alert->user->email}");
+                    Log::info("Alert fired", [
+                        'user'    => $alert->user->email,
+                        'code'    => $alert->trading_code,
+                        'ltp'     => $ltp,
+                        'trigger' => $triggerType,
+                    ]);
+                } catch (\Throwable $e) {
+                    Log::error("Failed to send alert email for alert #{$alert->id}: " . $e->getMessage());
+                    $this->error("✗ Mail failed for {$alert->trading_code}: " . $e->getMessage());
                 }
-
-                // Send email (queued)
-                Mail::to($alert->user->email)
-                    ->queue(new PriceAlertReached($code, $triggerType, $ltp));
-
-                // Deactivate alert to avoid repeat mails
-                $alert->update(['is_active' => false]);
-
-                $alertsFired++;
-
-                $this->line("Alert sent to {$alert->user->email} for {$code} ({$triggerType} at $ltp).");
             }
         }
+
+        // $alertsFired = 0;
+        // foreach ($prices as $item) {
+        //     $ltp = (float) $item->ltp;   // ensure numeric float
+        //     $code = $item->trading_code;
+
+        //     $matchingAlerts = Alert::where('trading_code', $code)
+        //         ->where('is_active', true)
+        //         ->where(function ($query) use ($ltp) {
+        //             $query->where(function ($q) use ($ltp) {
+        //                 $q->whereNotNull('high_price')
+        //                     ->where('high_price', '<=', $ltp);
+        //             })->orWhere(function ($q) use ($ltp) {
+        //                 $q->whereNotNull('low_price')
+        //                     ->where('low_price', '>=', $ltp);
+        //             });
+        //         })
+        //         ->with('user')
+        //         ->get();
+
+        //     foreach ($matchingAlerts as $alert) {
+        //         // Cast alert prices to float for safe comparison
+        //         $high = is_null($alert->high_price) ? null : (float) $alert->high_price;
+        //         $low  = is_null($alert->low_price)  ? null : (float) $alert->low_price;
+
+        //         // Determine which price matched (priority: high > low)
+        //         $triggerType = '';
+        //         if (!is_null($high) && $ltp >= $high) {
+        //             $triggerType = 'high';
+        //         } elseif (!is_null($low) && $ltp <= $low) {
+        //             $triggerType = 'low';
+        //         }
+
+        //         // Send email (queued)
+        //         Mail::to($alert->user->email)
+        //             ->queue(new PriceAlertReached($code, $triggerType, $ltp));
+
+        //         // Deactivate alert to avoid repeat mails
+        //         $alert->update(['is_active' => false]);
+
+        //         $alertsFired++;
+
+        //         $this->line("Alert sent to {$alert->user->email} for {$code} ({$triggerType} at $ltp).");
+        //     }
+        // }
 
         $this->info("Done. {$alertsFired} alert(s) fired.");
         return 0;
