@@ -126,10 +126,9 @@ The app will be available at `http://127.0.0.1:8000`.
 
 ## Scheduling & Queue Processing
 
-The core functionality relies on two scheduled commands:
+The core functionality relies on one fetch command:
 
-- `fetch:dse-data` – Fetches the latest share prices from DSE.
-- `check:alerts` – Compares LTP with user’s target prices and sends emails.
+- `fetch:ltp` – Fetches the latest share prices from DSE.
 
 **During local development**, run the scheduler in foreground mode:
 
