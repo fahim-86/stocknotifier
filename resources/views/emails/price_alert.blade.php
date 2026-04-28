@@ -113,16 +113,16 @@
         <div class="body">
             <div class="stat">
                 <span class="label">Trading Code</span>
-                <span class="value">{{ $alert->trading_code }}</span>
+                <span class="value"><b>{{ $alert->trading_code }}</b></span>
             </div>
             <div class="stat">
                 <span class="label">Last Traded Price (LTP)</span>
-                <span class="value ltp">৳ {{ number_format($ltp, 2) }}</span>
+                <span class="value ltp"><b>৳ {{ number_format($ltp, 2) }}</b></span>
             </div>
             @if($triggerType === 'high')
             <div class="stat">
                 <span class="label">Your High Alert</span>
-                <span class="value">৳ {{ number_format($alert->high_price, 2) }}</span>
+                <span class="value"><b>৳ {{ number_format($alert->high_price, 2) }}</b></span>
             </div>
             @else
             <div class="stat">
