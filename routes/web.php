@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AlertController;
 // use App\Services\DseScraperService;
+use Tests\Feature\DseScraperTest;
 use Illuminate\Support\Facades\Route;
 use League\Uri\Http;
 
@@ -12,6 +13,7 @@ Route::get('/', function () {
 // Route::get('/', function (DseScraperService $dseScraperService) {
 //     return $dseScraperService->fetchLatestPrices();
 // });
+
 
 // Route::get('/dashboard', function () {
 //     return view('dashboard');

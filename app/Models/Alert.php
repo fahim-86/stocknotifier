@@ -19,10 +19,20 @@ class Alert extends Model
     ];
 
     // protected $casts = [
-    //     'high_price' => 'float',
-    //     'low_price' => 'float',
-    //     'is_active' => 'boolean',
+    //     'high_price' => 'decimal:8,2',
+    //     'low_price' => 'decimal:8,2',
     // ];
+
+    public function scopePriceAlert($query, $ltp)
+    {
+        return $query->where(function ($q) use ($ltp) {
+            $q->where(function ($sub) use ($ltp) {
+                $sub->whereNotNull('high_price')->where('high_price', '<=', $ltp);
+            })->orWhere(function ($sub) use ($ltp) {
+                $sub->whereNotNull('low_price')->where('low_price', '>=', $ltp);
+            });
+        });
+    }
 
     public function user(): BelongsTo
     {

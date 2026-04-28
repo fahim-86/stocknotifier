@@ -10,7 +10,6 @@ class DseScraperService
 {
     protected string $url = 'https://dsebd.org/latest_share_price_scroll_l.php';
 
-
     /**
      * Fetch the latest share prices from DSE.
      *
@@ -98,10 +97,17 @@ class DseScraperService
             ]);
         });
 
-
+        // dump("Fetched {$data->count()} price entries from DSE.");
         return $data->values();
     }
+    
+    
+    // protected string $url;
 
+    // public function __construct(string $url = "")
+    // {
+    //     $this->url = $url ?? 'https://dsebd.org/latest_share_price_scroll.php.na'; // real URL
+    // }
 
     /**
      * Try to find the column numbers by matching header text.

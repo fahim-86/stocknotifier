@@ -23,7 +23,6 @@ class DseScraperTest extends TestCase
 
         // 3. Instantiate your scraper (adjust constructor if needed)
         $scraper = new DseScraperService(); // or via app()->make(...)
-
         // 4. Execute the method
         $result = $scraper->fetchLatestPrices();
 
