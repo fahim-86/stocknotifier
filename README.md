@@ -184,7 +184,7 @@ The `fetch:ltp` command will populate the stocks table with current DSE data. Th
 
 ## Contributing
 
-Contributions, issues, and feature requests are welcome. Feel free to check [issues page](https://github.com/yourusername/dse-price-alert/issues).
+Contributions, issues, and feature requests are welcome. Feel free to check [issues page](https://github.com/fahim-86/stocknotifier/issues).
 
 ## License
 
