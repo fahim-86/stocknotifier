@@ -11,7 +11,7 @@
                 x-data="alertManager()"
                 x-init="init({{ json_encode($availableCodes) }}, {{ json_encode($alerts->map(fn($a) => ['trading_code' => $a->trading_code, 'high_price' => $a->high_price, 'low_price' => $a->low_price])) }})">
 
-                <!-- Header with Add button -->
+                {{-- Header with Add button --}}
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-medium">Your Active Alerts</h3>
                     <button @click="addRow()" type="button"
@@ -20,7 +20,7 @@
                     </button>
                 </div>
 
-                <!-- Table of alert rows -->
+                {{-- Table of alert rows --}}
                 <template x-if="rows.length">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -62,7 +62,7 @@
                     </table>
                 </template>
 
-                <!-- Message when no rows -->
+                {{-- Message when no rows --}}
                 <div x-show="!rows.length" class="text-gray-500 text-center py-4">
                     No alerts yet. Click "Add" to create one.
                 </div>
@@ -74,13 +74,13 @@
                     </button>
                     <p x-text="message" class="text-sm mt-2" :class="{'text-green-600': success, 'text-red-600': !success}"></p>
                 </div>
-                <!-- Save Button -->
+                {{-- Save Button --}}
             </div>
         </div>
     </div>
 
-    <!-- Alpine.js CDN (if not already included in layout) -->
-    <!-- <script src="//unpkg.com/alpinejs"></script> -->
+    {{-- Alpine.js CDN (if not already included in layout) --}}
+    {{-- <script src="//unpkg.com/alpinejs"></script> --}}
 
     <script>
         function alertManager() {
