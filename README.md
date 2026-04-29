@@ -174,7 +174,7 @@ The `fetch:ltp` command will populate the stocks table with current DSE data. Th
 3. **Add an Alert:**
     - Select a trading code from the dropdown (populated from the `stocks` cache).
 
-    - Enter your target price (e.g., `21.50`).
+    - Enter your target expected price for High and Low (e.g., `21.50`).
 
     - Click “Add Alert” to create a new row.
 
