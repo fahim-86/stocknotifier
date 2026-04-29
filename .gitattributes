@@ -6,6 +6,14 @@
 *.md diff=markdown
 *.php diff=php
 
+# Exclude HTML/Blade from statistics
+*.html linguist-detectable=false
+*.blade.php linguist-detectable=false
+
 /.github export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore
+
+/public/build/* linguist-documentation
+/public/js/* linguist-documentation
+/public/css/* linguist-documentation
