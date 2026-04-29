@@ -1,9 +1,9 @@
 <x-login-layout>
     <div class="flex min-h-screen">
-        <!-- Hero Panel (60%) -->
+        {{-- Hero Panel (60%) --}}
         <div class="hidden lg:flex lg:w-3/5 relative overflow-hidden"
             style="background: linear-gradient(135deg, #006a4e 0%, #004d35 100%);">
-            <!-- Geometric overlay (subtle SVG pattern) -->
+            {{-- Geometric overlay (subtle SVG pattern) --}}
             <div class="absolute inset-0 opacity-10">
                 <svg width="100%" height="100%">
                     <defs>
@@ -19,7 +19,7 @@
                 </svg>
             </div>
 
-            <!-- Emblem & Content -->
+            {{-- Emblem & Content --}}
             <div class="relative z-10 flex flex-col items-center justify-center w-full p-12 text-center text-white">
                 <div class="mb-5">
                     <a href="/">
@@ -32,14 +32,14 @@
                 <p class="mt-8 text-sm opacity-75">নির্ভুল ডেটা, সফল বিনিয়োগের পথ</p>
             </div>
 
-            <!-- Decorative red stripe / accent -->
+            {{-- Decorative red stripe / accent --}}
             <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-red-500 rounded-full"></div>
         </div>
 
-        <!-- Form Panel (40%) -->
+        {{-- Form Panel (40%) --}}
         <div class="w-full lg:w-3/5 flex items-center justify-center p-8 bg-white">
             <div class="w-full max-w-md">
-                <!-- Mobile banner (visible only on small screens) -->
+                {{-- Mobile banner (visible only on small screens) --}}
                 <div class="lg:hidden text-center mb-8">
                     <div class="inline-flex items-center justify-center p-3 rounded-full">
                         <img src="{{ asset('images/logo120.svg') }}" alt="Logo" class="w-20 h-20">
@@ -47,7 +47,7 @@
                     <h2 class="mt-4 text-2xl font-serif font-bold text-green-900">StockBuzz Login</h2>
                 </div>
 
-                <!-- Session Status -->
+                {{-- Session Status --}}
                 <x-auth-session-status class="mb-4" :status="session('status')" />
 
                 <form method="POST" action="{{ route('login') }}">
@@ -56,14 +56,14 @@
                     <h2 class="text-3xl font-serif font-bold text-gray-800 mb-2 hidden lg:block">Sign in to your account</h2>
                     <p class="text-gray-500 mb-6 hidden lg:block">Welcome back! Please enter your details.</p>
 
-                    <!-- Email -->
+                    {{-- Email --}}
                     <div class="mb-4">
                         <x-input-label for="email" :value="__('Email')" />
                         <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
                         <x-input-error :messages="$errors->get('email')" class="mt-2" />
                     </div>
 
-                    <!-- Password with show/hide toggle -->
+                    {{-- Password with show/hide toggle --}}
                     <div class="mb-4 relative" x-data="{ show: false }">
                         <x-input-label for="password" :value="__('Password')" />
                         <div class="relative">
@@ -85,7 +85,7 @@
                         <x-input-error :messages="$errors->get('password')" class="mt-2" />
                     </div>
 
-                    <!-- Remember Me -->
+                    {{-- Remember Me --}}
                     <div class="block mb-4">
                         <label for="remember_me" class="inline-flex items-center">
                             <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-green-700 shadow-sm focus:ring-green-500" name="remember">

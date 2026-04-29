@@ -15,7 +15,7 @@
         </div>
     </div>
     <div>
-        <!-- Dropdown -->
+        {{-- Dropdown --}}
         <select wire:model="selectedCode">
             <option value="">Select Trading Code</option>
             @foreach($stockList as $stock)
@@ -23,12 +23,12 @@
             @endforeach
         </select>
 
-        <!-- Target Price Input -->
+        {{--Target Price Input--}}
         <input type="number" step="0.01" wire:model="targetPrice" placeholder="Target Price">
 
         <button wire:click="addAlert">Add Alert</button>
 
-        <!-- List of Active Alerts (Rows) -->
+        {{--List of Active Alerts (Rows)--}}
         <table>
             @foreach($alerts as $alert)
             <tr>
