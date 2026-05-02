@@ -22,6 +22,7 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [AlertController::class, 'index'])->name('dashboard');
+    Route::get('/alerts/ltp', [AlertController::class, 'ltp'])->name('alerts.ltp');
     Route::post('/alerts', [AlertController::class, 'store'])->name('alerts.store');
     Route::delete('/alerts/{alert}', [AlertController::class, 'destroy'])->name('alerts.destroy');
 });
