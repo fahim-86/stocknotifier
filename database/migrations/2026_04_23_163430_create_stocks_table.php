@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('stocks', function (Blueprint $table) {
             $table->id();
-            $table->string('trading_code')->unique();
-            $table->decimal('ltp', 10, 2)->default(0);
-            $table->timestamp('last_fetched_at')->nullable();
+            $table->string('trading_code', 50)->unique();
+            $table->decimal('ltp', 10, 2)->nullable();
+            $table->timestamp('fetched_at')->nullable();
             $table->timestamps();
         });
     }
