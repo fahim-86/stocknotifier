@@ -31,8 +31,8 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Alert::class);
     }
 
-    // public function sendEmailVerificationNotification()
-    // {
-    //     $this->notify(new \Illuminate\Auth\Notifications\VerifyEmail);
-    // }
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new \Illuminate\Auth\Notifications\VerifyEmail);
+    }
 }
