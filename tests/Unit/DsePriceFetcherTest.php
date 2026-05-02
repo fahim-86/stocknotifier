@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use Tests\TestCase;
-use App\Services\DseScraperService;   // adjust to your actual class
+use App\Services\DseTestScraperService;   // adjust to your actual class
 use Illuminate\Support\Facades\Http;
 
 class DsePriceFetcherTest
@@ -27,10 +27,10 @@ class DsePriceFetcherTest
 
         // 2. Instantiate your service with the fake target URL
         //    (the original code uses $this->url – we set it to our fake URL)
-        $fetcher = new DseScraperService('http://test-dse.local/latest_price');
+        $fetcher = new DseTestScraperService('http://test-dse.local/latest_price');
 
         // 3. Call the method we want to test
-        $prices = $fetcher->fetchLatestPrices();
+        $prices = $fetcher->fetchOfflinePrices();
 
         return $prices->values();
     }
