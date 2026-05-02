@@ -4,131 +4,121 @@ namespace App\Services;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\DomCrawler\Crawler;
 
 class DseScraperService
 {
-    protected string $url = 'https://dsebd.org/latest_share_price_scroll_l.php';
-
-    /**
-     * Fetch the latest share prices from DSE.
-     *
-     * @return Collection of objects with 'trading_code' and 'ltp' properties.
-     */
+    protected string $baseUrl  = 'https://dsebd.org/';
+    protected string $priceUrl = 'https://dsebd.org/latest_share_price_scroll_l.php';
 
     public function fetchLatestPrices(): Collection
     {
-        // 1. Get cookies from the main page
-        $jarResponse = Http::withHeaders([
-            'User-Agent'      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept'          => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        ])->get('https://dsebd.org/');
+        try {
+            // Step 1: Prime cookies from homepage
+            $jarResponse = Http::withHeaders($this->browserHeaders())->get($this->baseUrl);
 
-        // Convert Cookie objects to a simple key → value array
-        $cookies = [];
-        foreach ($jarResponse->cookies() as $cookie) {
-            $cookies[$cookie->getName()] = $cookie->getValue();
+            $cookies = [];
+            foreach ($jarResponse->cookies() as $cookie) {
+                $cookies[$cookie->getName()] = $cookie->getValue();
+            }
+
+            // Step 2: Fetch price page with cookies + referer
+            $response = Http::withHeaders(array_merge($this->browserHeaders(), [
+                'Referer'         => $this->baseUrl,
+                'Accept-Language' => 'en-US,en;q=0.9',
+            ]))
+                ->withCookies($cookies, 'dsebd.org')
+                ->timeout(20)
+                ->get($this->priceUrl);
+
+            if (! $response->successful()) {
+                Log::warning('DSE scraper: non-200 response', ['status' => $response->status()]);
+                return collect();
+            }
+
+            return $this->parseHtml($response->body());
+        } catch (\Throwable $e) {
+            Log::error('DSE scraper exception: ' . $e->getMessage());
+            return collect();
         }
+    }
 
-        // 2. Request the target page, passing the cookies
-        $response = Http::withHeaders([
-            'User-Agent'      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept'          => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language' => 'en-US,en;q=0.5',
-            'Referer'         => 'https://dsebd.org/',
-        ])
-            ->withCookies($cookies, 'dsebd.org')   // now it's a clean associative array
-            ->timeout(15)
-            ->get($this->url);
-        if (!$response->successful()) return collect();
-
-        $html = $response->body();
+    protected function parseHtml(string $html): Collection
+    {
         $crawler = new Crawler($html);
 
-        // 3. Locate the table (using class from full page)
-        $table = $crawler->filter('.table-responsive.inner-scroll table.shares-table')->first();
-        if (!$table->count()) {
-            // try any responsive wrapper
-            $table = $crawler->filter('.table-responsive table.shares-table')->first();
+        // Try the specific table first, then fall back to first available table
+        $table = $crawler->filter('.table-responsive table.shares-table')->first();
+        if (! $table->count()) {
+            $table = $crawler->filter('table')->first();
         }
-        if (!$table->count()) {
-            // last resort: get the first table that has rows
-            $tables = $crawler->filter('table');
-            $table = $tables->first();
+        if (! $table->count()) {
+            Log::warning('DSE scraper: no table found in response');
+            return collect();
         }
 
         $rows = $table->filter('tr');
-        if ($rows->count() < 2) return collect();
+        if ($rows->count() < 2) {
+            return collect();
+        }
 
-        // 4. Detect columns
-        $headerCells = $rows->first()->filter('th, td');
-        $codeCol = null;
-        $ltpCol  = null;
-        $headerCells->each(function (Crawler $cell, int $i) use (&$codeCol, &$ltpCol) {
-            $text = strtoupper(trim($cell->text()));
-            if (!$text) {
-                $label = $cell->attr('aria-label');
-                $text  = $label ? strtoupper($label) : '';
-            }
-            if ($text === 'TRADING CODE' || str_contains($text, 'TRADING')) {
-                $codeCol = $i;
-            }
-            if ($text && stripos($text, 'LTP') !== false) {
-                $ltpCol = $i;
-            }
-        });
-        $codeCol = $codeCol ?? 1;
-        $ltpCol  = $ltpCol  ?? 2;
+        // Detect column positions from header row
+        [$codeCol, $ltpCol] = $this->detectColumns($rows->first()->filter('th, td'));
 
-        // 5. Extract data
         $data = collect();
+
         $rows->each(function (Crawler $row, int $i) use ($codeCol, $ltpCol, $data) {
-            if ($i === 0) return;
+            if ($i === 0) return; // skip header
+
             $cells = $row->filter('td');
             if ($cells->count() <= max($codeCol, $ltpCol)) return;
-            $code = trim($cells->eq($codeCol)->text());
-            $ltp  = trim($cells->eq($ltpCol)->text());
-            if (empty($code) || empty($ltp)) return;
-            $cleanLtp = preg_replace('/[^0-9.-]/', '', $ltp);
-            if (!is_numeric($cleanLtp)) return;
-            $data->push((object)[
+
+            $code     = trim($cells->eq($codeCol)->text(''));
+            $ltpRaw   = trim($cells->eq($ltpCol)->text(''));
+            $cleanLtp = preg_replace('/[^0-9.]/', '', $ltpRaw);
+
+            if (empty($code) || ! is_numeric($cleanLtp) || (float) $cleanLtp <= 0) return;
+
+            $data->push((object) [
                 'trading_code' => $code,
                 'ltp'          => (float) $cleanLtp,
             ]);
         });
 
-        // dump("Fetched {$data->count()} price entries from DSE.");
         return $data->values();
     }
-    
-    
-    // protected string $url;
 
-    // public function __construct(string $url = "")
-    // {
-    //     $this->url = $url ?? 'https://dsebd.org/latest_share_price_scroll.php.na'; // real URL
-    // }
-
-    /**
-     * Try to find the column numbers by matching header text.
-     *
-     * @param Crawler $headerCells
-     * @return array ['code' => index, 'ltp' => index] or null if not found
-     */
-    protected function mapColumns(Crawler $headerCells): ?array
+    protected function detectColumns(Crawler $headerCells): array
     {
-        $mapping = ['code' => null, 'ltp' => null];
+        $codeCol = null;
+        $ltpCol  = null;
 
-        $headerCells->each(function (Crawler $cell, int $idx) use (&$mapping) {
-            $text = strtolower(trim($cell->text()));
-            if (in_array($text, ['trading code', 'code', 'scrip', 'symbol'])) {
-                $mapping['code'] = $idx;
+        $headerCells->each(function (Crawler $cell, int $i) use (&$codeCol, &$ltpCol) {
+            $text = strtoupper(trim($cell->text('')));
+            if (! $text && $cell->attr('aria-label')) {
+                $text = strtoupper($cell->attr('aria-label'));
             }
-            if (in_array($text, ['ltp', 'last trade', 'last price', 'close', 'ltp*'])) {
-                $mapping['ltp'] = $idx;
+
+            if (str_contains($text, 'TRADING') || $text === 'CODE' || $text === 'SCRIP') {
+                $codeCol = $i;
+            }
+            if (str_contains($text, 'LTP') || str_contains($text, 'LAST')) {
+                $ltpCol = $i;
             }
         });
 
-        return ($mapping['code'] !== null && $mapping['ltp'] !== null) ? $mapping : null;
+        // Sensible defaults if detection fails
+        return [$codeCol ?? 1, $ltpCol ?? 2];
+    }
+
+    protected function browserHeaders(): array
+    {
+        return [
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                . 'AppleWebKit/537.36 (KHTML, like Gecko) '
+                . 'Chrome/124.0.0.0 Safari/537.36',
+            'Accept'     => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        ];
     }
 }
