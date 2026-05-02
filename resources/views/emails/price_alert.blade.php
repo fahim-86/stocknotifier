@@ -89,7 +89,7 @@
         <h2 style="margin: 0 0 20px; font-size: 22px;">{{ $alert->trading_code }}</h2>
 
         <div class="row">
-            <span class="label">Current LTP</span>
+            <span class="label">Current LTP </span>
             <span class="value">৳ {{ number_format($ltp, 2) }}</span>
         </div>
         @if($alert->high_price)
@@ -100,16 +100,17 @@
         @endif
         @if($alert->low_price)
         <div class="row">
-            <span class="label">Your low target</span>
+            <span class="label">Your low target </span>
             <span class="value">৳ {{ number_format($alert->low_price, 2) }}</span>
         </div>
         @endif
         <div class="row">
-            <span class="label">Alert triggered at</span>
+            <span class="label">Alert triggered at </span>
             <span class="value">{{ now('Asia/Dhaka')->format('d M Y, h:i A') }} BST</span>
         </div>
 
-        <p class="footer">This alert has been deactivated. Log back in to set a new one.</p>
+        <p class="footer">This alert has been deactivated. <a class="btn" href="{{ url('/dashboard') }}">Log back in</a> to set a new one.</p>
+
     </div>
 </body>
 
