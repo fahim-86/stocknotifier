@@ -6,6 +6,7 @@ use App\Models\Alert;
 use App\Models\Stock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class AlertController extends Controller
 {
@@ -18,9 +19,29 @@ class AlertController extends Controller
         $availableCodes = Stock::orderBy('trading_code')->pluck('trading_code')->values()->toArray();
 
         // User's current alerts
-        $alerts = Auth::user()->alerts()->where('is_active', true)->get();
+        $alerts = Auth::user()->alerts()->where('is_active', true)->latest()->get();
 
         return view('alerts.index', compact('availableCodes', 'alerts'));
+    }
+
+    /**
+     * Returns LTP for a given trading code — called by Alpine.js via fetch()
+     */
+    public function ltp(Request $request)
+    {
+        $request->validate(['trading_code' => 'required|string']);
+
+        $stock = Stock::where('trading_code', $request->trading_code)->first();
+
+        if (!$stock) {
+            return response()->json(['ltp' => null, 'message' => 'Stock not found'], 404);
+        }
+
+        return response()->json([
+            'ltp'          => (float) $stock->ltp,
+            'trading_code' => $stock->trading_code,
+            'fetched_at'   => $stock->fetched_at?->diffForHumans(),
+        ]);
     }
 
     /**
