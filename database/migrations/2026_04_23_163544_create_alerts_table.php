@@ -13,12 +13,15 @@ return new class extends Migration
     {
         Schema::create('alerts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->onDelete('cascade');
-            $table->string('trading_code');
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('trading_code', 50);
             $table->decimal('high_price', 10, 2)->nullable();
             $table->decimal('low_price', 10, 2)->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
+
+            $table->index(['trading_code', 'is_active']);
+            $table->index('user_id');
         });
     }
 

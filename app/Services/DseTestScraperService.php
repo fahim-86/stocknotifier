@@ -6,31 +6,43 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\DomCrawler\Crawler;
+use Tests\Unit\DsePriceFetcherTest;
 
-class DseScraperService
+class DseTestScraperService
 {
     protected string $baseUrl  = 'https://dsebd.org/';
-    protected string $priceUrl = 'https://dsebd.org/latest_share_price_scroll_l.php';
+    protected string $url;
 
-    public function fetchLatestPrices(): Collection
+    public function __construct(string $url = "")
+    {
+        $this->url = $url ?? 'https://dsebd.org/latest_share_price_scroll.php.na'; // real URL
+        dump("DseTestScraperService initialized with URL: {$this->url}");
+    }
+
+    public function fetchOfflinePrices(): Collection
     {
         try {
-            // Step 1: Prime cookies from homepage
-            $jarResponse = Http::withHeaders($this->browserHeaders())->get($this->baseUrl);
+            $jarResponse = Http::withHeaders([
+                'User-Agent'      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept'          => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            ])->get('https://dsebd.org/');
 
+            // Convert Cookie objects to a simple key → value array
             $cookies = [];
             foreach ($jarResponse->cookies() as $cookie) {
                 $cookies[$cookie->getName()] = $cookie->getValue();
             }
 
-            // Step 2: Fetch price page with cookies + referer
-            $response = Http::withHeaders(array_merge($this->browserHeaders(), [
-                'Referer'         => $this->baseUrl,
-                'Accept-Language' => 'en-US,en;q=0.9',
-            ]))
-                ->withCookies($cookies, 'dsebd.org')
-                ->timeout(20)
-                ->get($this->priceUrl);
+            // 2. Request the target page, passing the cookies
+            $response = Http::withHeaders([
+                'User-Agent'      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept'          => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language' => 'en-US,en;q=0.5',
+                'Referer'         => 'https://dsebd.org/',
+            ])
+                ->withCookies($cookies, 'dsebd.org')   // now it's a clean associative array
+                ->timeout(15)
+                ->get($this->url);
 
             if (! $response->successful()) {
                 Log::warning('DSE scraper: non-200 response', ['status' => $response->status()]);

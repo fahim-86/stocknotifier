@@ -2,10 +2,9 @@
 
 namespace App\Mail;
 
+use App\Models\Alert;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -14,33 +13,28 @@ class PriceAlertReached extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $tradingCode;
-    public $triggerType; // 'high' or 'low'
-    public $ltp;
+    public function __construct(
+        public readonly Alert  $alert,
+        public readonly float  $ltp,
+        public readonly string $triggerType  // 'high' | 'low' | 'both'
+    ) {}
 
-    /**
-     * Create a new message instance.
-     */
-    public function __construct(string $tradingCode, string $triggerType, float $ltp)
+    public function envelope(): Envelope
     {
-        $this->tradingCode = $tradingCode;
-        $this->triggerType = $triggerType;
-        $this->ltp = $ltp;
+        $label = match ($this->triggerType) {
+            'high'  => '🔴 HIGH target reached',
+            'low'   => '🟢 LOW target reached',
+            'both'  => '⚡ Both targets reached',
+            default => 'Alert triggered',
+        };
+
+        return new Envelope(
+            subject: "[DSE Alert] {$label} — {$this->alert->trading_code}",
+        );
     }
 
-    public function build()
+    public function content(): Content
     {
-        return $this->subject("DSE Alert: {$this->tradingCode} {$this->triggerType} price hit")
-            ->markdown('emails.price_alert');
-    }
-
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, Attachment>
-     */
-    public function attachments(): array
-    {
-        return [];
+        return new Content(view: 'emails.price_alert');
     }
 }

@@ -6,18 +6,18 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
-use App\Services\DseScraperService;
+use App\Services\DseTestScraperService;   // our test scraper that reads from local stub
 use App\Models\Stock;
 use App\Models\Alert;
 use App\Mail\PriceAlertReached;
+use Tests\Unit\DsePriceFetcherTest;
 
-
-class FetchLtpCommand extends Command
+class TestFetchLtpCommand extends Command
 {
-    protected $signature = 'fetch:ltp {--force : Skip trading hours check}';
+    protected $signature = 'fetch:testltp {--force : Skip trading hours check}';
     protected $description = 'Fetch LTP from DSE and fire price alerts';
 
-    public function handle(DseScraperService $scraper): int
+    public function handle(DsePriceFetcherTest $scraper): int
     {
 
         $now = Carbon::now('Asia/Dhaka');
@@ -31,10 +31,10 @@ class FetchLtpCommand extends Command
             }
         }
 
-        $prices = $scraper->fetchLatestPrices();
+        $prices = $scraper->it_can_fetch_latest_prices_from_local_stub();
 
         if ($prices->isEmpty()) {
-            Log::warning('fetch:ltp — scraper returned no data');
+            Log::warning('fetch:testltp — scraper returned no data');
             $this->warn('No price data received.');
             return self::FAILURE;
         }
